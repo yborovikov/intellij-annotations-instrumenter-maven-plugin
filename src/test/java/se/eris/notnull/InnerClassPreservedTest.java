@@ -99,16 +99,17 @@ public class InnerClassPreservedTest {
     @Test
     public void innerClassesSegmentIsPreserved() throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
-        final File f = new File(TARGET_DIR, TEST_CLASS.getMessageName() + "$InnerClassesSegmentIsPreserved.class");
-        assertTrue(f.isFile());
-        final ClassReader cr = new ClassReader(new FileInputStream(f));
+        final TestClass preserved = TEST_CLASS.inner("InnerClassesSegmentIsPreserved");
+        final File preservedClassFile = preserved.getClassFile(TARGET_DIR);
+        assertTrue(preservedClassFile.isFile());
+        final ClassReader cr = new ClassReader(new FileInputStream(preservedClassFile));
         final List<InnerClass> innerClasses = getInnerClasses(cr);
         assertEquals(2, innerClasses.size());
         //self-entry
-        assertEquals( TEST_CLASS.getMessageName() + "$InnerClassesSegmentIsPreserved", innerClasses.get(0).name);
+        assertEquals( preserved.getMessageName(), innerClasses.get(0).name);
         //inner entry
-        final InnerClass expected = new InnerClass(TEST_CLASS.getMessageName() + "$InnerClassesSegmentIsPreserved$ASub",
-                TEST_CLASS.getMessageName() + "$InnerClassesSegmentIsPreserved", "ASub", Opcodes.ACC_PUBLIC |
+        final InnerClass expected = new InnerClass(preserved.inner("ASub").getMessageName(),
+                preserved.getMessageName(), "ASub", Opcodes.ACC_PUBLIC |
                 Opcodes.ACC_STATIC);
         assertEquals(expected, innerClasses.get(1));
     }
