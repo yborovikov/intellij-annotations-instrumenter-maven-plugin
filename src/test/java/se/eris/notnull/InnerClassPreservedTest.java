@@ -71,26 +71,28 @@ public class InnerClassPreservedTest {
 
     @Test
     public void syntheticMethod_dispatchesToSpecializedMethod() throws Exception {
-        final Class<?> superargClass = compiler.getCompiledClass(TEST_CLASS.getName() + "$Superarg");
-        final Class<?> subClass = compiler.getCompiledClass(TEST_CLASS.getName() + "$Sub");
+        final TestClass sub = TEST_CLASS.inner("Sub");
+        final Class<?> superargClass = compiler.getCompiledClass(TEST_CLASS.inner("Superarg").getName());
+        final Class<?> subClass = compiler.getCompiledClass(sub.getName());
         final Method generalMethod = subClass.getMethod("overload", superargClass);
         assertTrue(generalMethod.isSynthetic());
         assertTrue(generalMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of " + TEST_CLASS.getMessageName() + "$Sub.overload must not be null");
+        exception.expectMessage("Argument 0 for @NotNull parameter of " + sub.getMessageName() + ".overload must not be null");
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
     }
 
     @Test
     public void onlySpecificMethod_isInstrumented() throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
-        final File f = new File(TARGET_DIR, TEST_CLASS.getMessageName() + "$Sub.class");
-        assertTrue(f.isFile());
-        final ClassReader cr = new ClassReader(new FileInputStream(f));
+        final TestClass sub = TEST_CLASS.inner("Sub");
+        final File subClassFile = sub.getClassFile(TARGET_DIR);
+        assertTrue(subClassFile.isFile());
+        final ClassReader cr = new ClassReader(new FileInputStream(subClassFile));
         final List<String> strings = getStringConstants(cr, "overload");
-        final String onlyExpectedString = "(L" + TEST_CLASS.getMessageName() + "$Subarg;)V:" +
+        final String onlyExpectedString = "(L" + TEST_CLASS.inner("Subarg").getMessageName() + ";)V:" +
                 "Argument 0 for @NotNull parameter of " +
-                TEST_CLASS.getMessageName() + "$Sub.overload must not be null";
+                sub.getMessageName() + ".overload must not be null";
         assertEquals(Collections.singletonList(onlyExpectedString), strings);
     }
 

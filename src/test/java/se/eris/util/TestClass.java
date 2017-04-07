@@ -27,4 +27,11 @@ public class TestClass {
         return new File(path, fullClassName.replace(".", "/") + ".java");
     }
 
+    public File getClassFile(final File path) {
+        return new File(path, fullClassName.replace(".", "/") + ".class");
+    }
+
+    public TestClass inner(final String innerName) {
+        return new TestClass(fullClassName + "$" + innerName);
+    }
 }
