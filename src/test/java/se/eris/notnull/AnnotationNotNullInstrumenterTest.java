@@ -21,32 +21,23 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestCompiler;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertTrue;
 
 public class AnnotationNotNullInstrumenterTest {
 
@@ -123,84 +114,6 @@ public class AnnotationNotNullInstrumenterTest {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull$Sub.overload must not be null");
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), specializedMethod, new Object[]{null});
-    }
-
-    @Test
-    public void syntheticMethod_dispatchesToSpecializedMethod() throws Exception {
-        final Class<?> superargClass = compiler.getCompiledClass("se.eris.test.TestNotNull$Superarg");
-        final Class<?> subClass = compiler.getCompiledClass("se.eris.test.TestNotNull$Sub");
-        final Method generalMethod = subClass.getMethod("overload", superargClass);
-        assertTrue(generalMethod.isSynthetic());
-        assertTrue(generalMethod.isBridge());
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull$Sub.overload must not be null");
-        ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
-    }
-
-    @Test
-    public void onlySpecificMethod_isInstrumented() throws Exception {
-        // Check that only the specific method has a string annotation indicating instrumentation
-        final File f = new File(CLASSES_DIRECTORY.toFile(), "se/eris/test/TestNotNull$Sub.class");
-        assertTrue(f.isFile());
-        final ClassReader cr = new ClassReader(new FileInputStream(f));
-        final List<String> strings = getStringConstants(cr, "overload");
-        final String onlyExpectedString = "(Lse/eris/test/TestNotNull$Subarg;)V:" +
-                "Argument 0 for @NotNull parameter of " +
-                "se/eris/test/TestNotNull$Sub.overload must not be null";
-        assertEquals(Collections.singletonList(
-                onlyExpectedString), strings);
-    }
-
-    @Test
-    public void innerClassesSegmentIsPreserved() throws Exception {
-        // Check that only the specific method has a string annotation indicating instrumentation
-        final File f = new File(CLASSES_DIRECTORY.toFile(), "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved.class");
-        assertTrue(f.isFile());
-        final ClassReader cr = new ClassReader(new FileInputStream(f));
-        final List<InnerClass> innerClasses = getInnerClasses(cr);
-        assertEquals(2, innerClasses.size());
-        //self-entry
-        assertEquals("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", innerClasses.get(0).name);
-        //inner entry
-        final InnerClass expected = new InnerClass("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved$ASub",
-                "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", "ASub", Opcodes.ACC_PUBLIC |
-                Opcodes.ACC_STATIC);
-        assertEquals(expected
-                , innerClasses.get(1));
-    }
-
-    private List<InnerClass> getInnerClasses(final ClassReader cr) {
-        final List<InnerClass> innerClasses = new ArrayList<>();
-        cr.accept(new ClassVisitor(Opcodes.ASM5) {
-            @Override
-            public void visitInnerClass(final String name, final String outerName, final String innerName, final int access) {
-                innerClasses.add(new InnerClass(name, outerName, innerName, access));
-            }
-        }, 0);
-        return innerClasses;
-    }
-
-    @NotNull
-    private List<String> getStringConstants(final ClassReader cr, final String methodName) {
-        final List<String> strings = new ArrayList<>();
-        cr.accept(new ClassVisitor(Opcodes.ASM5) {
-            @Override
-            public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
-                                             final String[] exceptions) {
-                if (name.equals(methodName)) {
-                    return new MethodVisitor(Opcodes.ASM5) {
-                        @Override
-                        public void visitLdcInsn(final Object cst) {
-                            if (cst instanceof String) {
-                                strings.add(desc + ":" + cst);
-                            }
-                        }
-                    };
-                }
-                return super.visitMethod(access, name, desc, signature, exceptions);
-            }
-        }, 0);
-        return strings;
     }
 
 }
