@@ -78,7 +78,7 @@ public class AnnotationNotNullInstrumenterTest {
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of " + TEST_CLASS.getMessageName() + ".notNullParameter must not be null");
+        exception.expectMessage("Argument 0 for @NotNull parameter of " + TEST_CLASS.getAsmName() + ".notNullParameter must not be null");
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
@@ -89,7 +89,7 @@ public class AnnotationNotNullInstrumenterTest {
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
 
         exception.expect(IllegalStateException.class);
-        exception.expectMessage("NotNull method " + TEST_CLASS.getMessageName() + ".notNullReturn must not return null");
+        exception.expectMessage("NotNull method " + TEST_CLASS.getAsmName() + ".notNullReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 
@@ -100,7 +100,7 @@ public class AnnotationNotNullInstrumenterTest {
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
 
         exception.expect(IllegalStateException.class);
-        exception.expectMessage("NotNull method " + TEST_CLASS.getMessageName() + ".annotatedReturn must not return null");
+        exception.expectMessage("NotNull method " + TEST_CLASS.getAsmName() + ".annotatedReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 
@@ -112,7 +112,7 @@ public class AnnotationNotNullInstrumenterTest {
         assertFalse(specializedMethod.isSynthetic());
         assertFalse(specializedMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of " + TEST_CLASS.getMessageName() + "$Sub.overload must not be null");
+        exception.expectMessage("Argument 0 for @NotNull parameter of " + TEST_CLASS.getAsmName() + "$Sub.overload must not be null");
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), specializedMethod, new Object[]{null});
     }
 

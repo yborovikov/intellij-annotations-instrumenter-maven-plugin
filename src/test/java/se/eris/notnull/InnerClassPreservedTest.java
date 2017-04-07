@@ -78,7 +78,7 @@ public class InnerClassPreservedTest {
         assertTrue(generalMethod.isSynthetic());
         assertTrue(generalMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of " + sub.getMessageName() + ".overload must not be null");
+        exception.expectMessage("Argument 0 for @NotNull parameter of " + sub.getAsmName() + ".overload must not be null");
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
     }
 
@@ -90,9 +90,9 @@ public class InnerClassPreservedTest {
         assertTrue(subClassFile.isFile());
         final ClassReader cr = new ClassReader(new FileInputStream(subClassFile));
         final List<String> strings = getStringConstants(cr, "overload");
-        final String onlyExpectedString = "(L" + TEST_CLASS.inner("Subarg").getMessageName() + ";)V:" +
+        final String onlyExpectedString = "(L" + TEST_CLASS.inner("Subarg").getAsmName() + ";)V:" +
                 "Argument 0 for @NotNull parameter of " +
-                sub.getMessageName() + ".overload must not be null";
+                sub.getAsmName() + ".overload must not be null";
         assertEquals(Collections.singletonList(onlyExpectedString), strings);
     }
 
@@ -106,11 +106,10 @@ public class InnerClassPreservedTest {
         final List<InnerClass> innerClasses = getInnerClasses(cr);
         assertEquals(2, innerClasses.size());
         //self-entry
-        assertEquals( preserved.getMessageName(), innerClasses.get(0).name);
+        assertEquals( preserved.getAsmName(), innerClasses.get(0).name);
         //inner entry
-        final InnerClass expected = new InnerClass(preserved.inner("ASub").getMessageName(),
-                preserved.getMessageName(), "ASub", Opcodes.ACC_PUBLIC |
-                Opcodes.ACC_STATIC);
+        final InnerClass expected = new InnerClass(preserved.inner("ASub").getAsmName(),
+                preserved.getAsmName(), "ASub", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
         assertEquals(expected, innerClasses.get(1));
     }
 

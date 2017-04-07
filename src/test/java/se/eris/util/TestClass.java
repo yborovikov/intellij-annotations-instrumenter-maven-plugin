@@ -19,7 +19,7 @@ public class TestClass {
     }
 
     // todo replace / with . in messages?
-    public String getMessageName() {
+    public String getAsmName() {
         return fullClassName.replace(".", "/");
     }
 
