@@ -1,6 +1,10 @@
 package se.eris.util;
 
+import org.objectweb.asm.ClassReader;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public class TestClass {
 
@@ -18,7 +22,6 @@ public class TestClass {
         return fullClassName;
     }
 
-    // todo replace / with . in messages?
     public String getAsmName() {
         return fullClassName.replace(".", "/");
     }
@@ -27,8 +30,12 @@ public class TestClass {
         return new File(path, fullClassName.replace(".", "/") + ".java");
     }
 
-    public File getClassFile(final File path) {
+    private File getClassFile(final File path) {
         return new File(path, fullClassName.replace(".", "/") + ".class");
+    }
+
+    public ClassReader getClassReader(final File path) throws IOException {
+        return new ClassReader(new FileInputStream(getClassFile(path)));
     }
 
     public TestClass inner(final String innerName) {

@@ -32,7 +32,6 @@ import se.eris.util.TestClass;
 import se.eris.util.TestCompiler;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -86,10 +85,8 @@ public class InnerClassPreservedTest {
     public void onlySpecificMethod_isInstrumented() throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
         final TestClass sub = TEST_CLASS.inner("Sub");
-        final File subClassFile = sub.getClassFile(TARGET_DIR);
-        assertTrue(subClassFile.isFile());
-        final ClassReader cr = new ClassReader(new FileInputStream(subClassFile));
-        final List<String> strings = getStringConstants(cr, "overload");
+        final ClassReader classReader = sub.getClassReader(TARGET_DIR);
+        final List<String> strings = getStringConstants(classReader, "overload");
         final String onlyExpectedString = "(L" + TEST_CLASS.inner("Subarg").getAsmName() + ";)V:" +
                 "Argument 0 for @NotNull parameter of " +
                 sub.getAsmName() + ".overload must not be null";
@@ -100,10 +97,8 @@ public class InnerClassPreservedTest {
     public void innerClassesSegmentIsPreserved() throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
         final TestClass preserved = TEST_CLASS.inner("InnerClassesSegmentIsPreserved");
-        final File preservedClassFile = preserved.getClassFile(TARGET_DIR);
-        assertTrue(preservedClassFile.isFile());
-        final ClassReader cr = new ClassReader(new FileInputStream(preservedClassFile));
-        final List<InnerClass> innerClasses = getInnerClasses(cr);
+        final ClassReader classReader = preserved.getClassReader(TARGET_DIR);
+        final List<InnerClass> innerClasses = getInnerClasses(classReader);
         assertEquals(2, innerClasses.size());
         //self-entry
         assertEquals( preserved.getAsmName(), innerClasses.get(0).name);
